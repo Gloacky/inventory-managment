@@ -11,7 +11,7 @@ export default function SideBar({currentPath = "/dashboard",}: {currentPath:stri
     ];
 
     return(
-        <div className="fixed left-1 top-1 rounded-lg shadow-xl shadow-white bg-[#0A0A0B] text-white w-64 min-h-screen p-6 z-10">
+        <div className="fixed left-1 top-1 rounded-lg  bg-gray-900 text-white w-64 min-h-screen p-6 z-10">
             <div className="mb-8">
                 <div className="flex items-center space-x-2 mb-4">
                     <BarChart3 className="w-7 h-7"/>
