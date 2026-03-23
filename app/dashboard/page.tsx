@@ -3,7 +3,7 @@ import ProductsChart from "@/components/products-chart";
 import {getCurrentUser} from "@/lib/auth";
 import {prisma} from "@/lib/prisma";
 import { TrendingUp } from "lucide-react";
-import { Product } from "@prisma/client";
+
 import { Decimal } from "@prisma/client/runtime/index-browser";
 
 export default async function DashboardPage(){
