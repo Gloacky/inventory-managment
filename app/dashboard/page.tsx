@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { TrendingUp } from "lucide-react";
 import { Decimal } from "@prisma/client/runtime/index-browser";
+import { Product } from "@prisma/client";
 
 type ProductSummary = {
     price: Decimal;
@@ -139,7 +140,7 @@ export default async function DashboardPage() {
                     <div className="bg-white rounded-lg border border-gray-200 p-6">
                         <h2 className="text-lg font-semibold text-gray-900 mb-6">Stock Levels</h2>
                         <div className="space-y-3">
-                            {recent.map((product, key) => {
+                            {recent.map((product: Product, key: number) => {
                                 const stockLevel =
                                     product.quantity === 0
                                         ? 0
