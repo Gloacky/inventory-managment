@@ -1,36 +1,40 @@
 import SideBar from "@/components/sidebar";
 import ProductsChart from "@/components/products-chart";
-import {getCurrentUser} from "@/lib/auth";
-import {prisma} from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { TrendingUp } from "lucide-react";
-
 import { Decimal } from "@prisma/client/runtime/index-browser";
 
-export default async function DashboardPage(){
-    const user = await getCurrentUser();
-    const userId=user.id;
+type ProductSummary = {
+    price: Decimal;
+    quantity: number;
+    createdAt: Date;
+};
 
-    const totalProducts = await prisma.product.count({where : {userId}});
-    const allProducts = await prisma.product.findMany({where:{userId},select:{price:true,quantity:true,createdAt:true}});
+export default async function DashboardPage() {
+    const user = await getCurrentUser();
+    const userId = user.id;
+
+    const totalProducts = await prisma.product.count({ where: { userId } });
+    const allProducts: ProductSummary[] = await prisma.product.findMany({
+        where: { userId },
+        select: { price: true, quantity: true, createdAt: true },
+    });
+
     const totalValue = allProducts.reduce(
-        (sum: number, product: { price: Decimal; quantity: number }) =>
+        (sum: number, product: ProductSummary) =>
             sum + product.price.toNumber() * Number(product.quantity),
         0
     );
-    
+
     const lowStockCount = allProducts.filter(
-        (p: { price: Decimal; quantity: number; createdAt: Date }) =>
-            Number(p.quantity) <= 5 && Number(p.quantity) >= 1
+        (p: ProductSummary) => Number(p.quantity) <= 5 && Number(p.quantity) >= 1
     ).length;
-
     const inStockCount = allProducts.filter(
-        (p: { price: Decimal; quantity: number; createdAt: Date }) =>
-            Number(p.quantity) > 5
+        (p: ProductSummary) => Number(p.quantity) > 5
     ).length;
-
     const outOfStockCount = allProducts.filter(
-        (p: { price: Decimal; quantity: number; createdAt: Date }) =>
-            Number(p.quantity) === 0
+        (p: ProductSummary) => Number(p.quantity) === 0
     ).length;
 
     const inStockPercentage =
@@ -43,26 +47,24 @@ export default async function DashboardPage(){
     const now = new Date();
     const weeklyProductsData = [];
 
-    for(let i = 11; i>=0; i--){
-        const weekStart=new Date(now);
-        weekStart.setDate(weekStart.getDate()-i*7);
-        weekStart.setHours(0,0,0,0);
+    for (let i = 11; i >= 0; i--) {
+        const weekStart = new Date(now);
+        weekStart.setDate(weekStart.getDate() - i * 7);
+        weekStart.setHours(0, 0, 0, 0);
 
         const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekEnd.getDate()+6);
-        weekStart.setHours(23,59,59,999);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        weekEnd.setHours(23, 59, 59, 999);
 
-        const weekLabel=`${String(weekStart.getMonth()+1).padStart(
-            2,"0"
-        )}/${String(weekStart.getDate()+1).padStart(2,"0")}`;
+        const weekLabel = `${String(weekStart.getMonth() + 1).padStart(2, "0")}/${String(weekStart.getDate()).padStart(2, "0")}`;
 
-        const weekProducts = allProducts.filter((product)=>{
+        const weekProducts = allProducts.filter((product: ProductSummary) => {
             const productDate = new Date(product.createdAt);
             return productDate >= weekStart && productDate <= weekEnd;
         });
 
         weeklyProductsData.push({
-            week:weekLabel,
+            week: weekLabel,
             products: weekProducts.length,
         });
     }
@@ -73,38 +75,31 @@ export default async function DashboardPage(){
         take: 5,
     });
 
-
     return (
         <div className="min-h-screen bg-gray-50">
-            <SideBar currentPath="/dashboard"/>
+            <SideBar currentPath="/dashboard" />
             <main className="ml-64 p-8">
-                {/*header*/}
+                {/* Header */}
                 <div className="mb-8">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
-                            <p className="text-sm text-gray-500">Welcome back! Here is an overview of your inventory.</p>
-                        </div>
-                    </div>
+                    <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+                    <p className="text-sm text-gray-500">
+                        Welcome back! Here is an overview of your inventory.
+                    </p>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    {/* Key Metrics */}
                     <div className="bg-white rounded-lg border border-gray-200 p-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-6">
-                            Key metrics
-                        </h2>
+                        <h2 className="text-lg font-semibold text-gray-900 mb-6">Key metrics</h2>
                         <div className="grid grid-cols-3 gap-6">
                             <div className="text-center">
-                                <div className="text-3xl font-bold text-gray-900">
-                                    {totalProducts}
-                                </div>
+                                <div className="text-3xl font-bold text-gray-900">{totalProducts}</div>
                                 <div className="text-sm text-gray-600">Total products</div>
                                 <div className="flex items-center justify-center mt-1">
                                     <span className="text-xs text-green-600 ml-1">+{totalProducts}</span>
                                     <TrendingUp className="w-3 h-3 text-green-600 ml-1" />
                                 </div>
                             </div>
-
                             <div className="text-center">
                                 <div className="text-3xl font-bold text-gray-900">
                                     ${Number(totalValue).toFixed(0)}
@@ -117,50 +112,51 @@ export default async function DashboardPage(){
                                     <TrendingUp className="w-3 h-3 text-green-600 ml-1" />
                                 </div>
                             </div>
-
-                            <div  className="text-center">
-                                <div className="text-3xl font-bold text-gray-900">
-                                    {lowStockCount}
-                                </div>
+                            <div className="text-center">
+                                <div className="text-3xl font-bold text-gray-900">{lowStockCount}</div>
                                 <div className="text-sm text-gray-600">Low stock</div>
                                 <div className="flex items-center justify-center mt-1">
                                     <span className="text-xs text-red-500">+{lowStockCount}</span>
-                                    <TrendingUp className="w-3 h-3 text-red-500 ml-1"/>
+                                    <TrendingUp className="w-3 h-3 text-red-500 ml-1" />
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
-                    {/*Inventory over time */}
+
+                    {/* Inventory over time */}
                     <div className="bg-white rounded-lg border border-gray-200 p-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-6">New products per week</h2>
-                        </div>
+                        <h2 className="text-lg font-semibold text-gray-900 mb-6">
+                            New products per week
+                        </h2>
                         <div className="h-48">
                             <ProductsChart data={weeklyProductsData} />
                         </div>
                     </div>
                 </div>
 
-                <div className="grid gid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                     {/* Stock Levels */}
                     <div className="bg-white rounded-lg border border-gray-200 p-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-lg font-semibold text-gray-900">
-                                Stock Levels
-                            </h2>
-                        </div>
-                        <div className="spacey-3">
-                            {recent.map((product,key)=>{
-                                const stockLevel=product.quantity === 0 ? 0 : product.quantity <= (product.lowStockAt || 5) ? 1 : 2;
-                                const bgColors=["bg-red-600","bg-yellow-600","bg-green-600"];
-                                const textColors=["text-red-600", "text-yellow-600","text-green-600"];
+                        <h2 className="text-lg font-semibold text-gray-900 mb-6">Stock Levels</h2>
+                        <div className="space-y-3">
+                            {recent.map((product, key) => {
+                                const stockLevel =
+                                    product.quantity === 0
+                                        ? 0
+                                        : product.quantity <= (product.lowStockAt || 5)
+                                            ? 1
+                                            : 2;
+                                const bgColors = ["bg-red-600", "bg-yellow-600", "bg-green-600"];
+                                const textColors = ["text-red-600", "text-yellow-600", "text-green-600"];
 
-                                return(
-                                    <div key={key} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                                        <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                                            <div className={`w-3 h-3 rounded-full ${bgColors[stockLevel]}`}/>
-                                            <span className="text-sm font-medium text-gray-900 ml-1">
+                                return (
+                                    <div
+                                        key={key}
+                                        className="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-3 h-3 rounded-full ${bgColors[stockLevel]}`} />
+                                            <span className="text-sm font-medium text-gray-900">
                                                 {product.name}
                                             </span>
                                         </div>
@@ -172,16 +168,13 @@ export default async function DashboardPage(){
                             })}
                         </div>
                     </div>
+
                     {/* Efficiency */}
                     <div className="bg-white rounded-lg border border-gray-200 p-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-lg font-semibold text-gray-900">
-                                Efficiency
-                            </h2>
-                        </div>
+                        <h2 className="text-lg font-semibold text-gray-900 mb-6">Efficiency</h2>
                         <div className="flex items-center justify-center">
                             <div className="relative w-48 h-48">
-                                <div className="absolute inset-0 rounded-full border-8 border-gray-200"></div>
+                                <div className="absolute inset-0 rounded-full border-8 border-gray-200" />
                                 <div
                                     className="absolute inset-0 rounded-full border-8 border-purple-600"
                                     style={{
