@@ -17,13 +17,20 @@ export default async function DashboardPage(){
             sum + product.price.toNumber() * Number(product.quantity),
         0
     );
+    
     const lowStockCount = allProducts.filter(
-        (p) => Number(p.quantity) <= 5 && Number(p.quantity) >= 1
+        (p: { price: Decimal; quantity: number; createdAt: Date }) =>
+            Number(p.quantity) <= 5 && Number(p.quantity) >= 1
     ).length;
 
-    const inStockCount = allProducts.filter((p) => Number(p.quantity) > 5).length;
+    const inStockCount = allProducts.filter(
+        (p: { price: Decimal; quantity: number; createdAt: Date }) =>
+            Number(p.quantity) > 5
+    ).length;
+
     const outOfStockCount = allProducts.filter(
-        (p) => Number(p.quantity) === 0
+        (p: { price: Decimal; quantity: number; createdAt: Date }) =>
+            Number(p.quantity) === 0
     ).length;
 
     const inStockPercentage =
