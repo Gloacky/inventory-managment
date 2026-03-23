@@ -11,7 +11,7 @@ export default async function DashboardPage(){
     const totalProducts = await prisma.product.count({where : {userId}});
     const allProducts = await prisma.product.findMany({where:{userId},select:{price:true,quantity:true,createdAt:true}});
     const totalValue = allProducts.reduce(
-        (sum, product) => sum + product.price.toNumber() * Number(product.quantity),
+        (sum: number, product) => sum + product.price.toNumber() * Number(product.quantity),
         0
     );
     const lowStockCount = allProducts.filter(
