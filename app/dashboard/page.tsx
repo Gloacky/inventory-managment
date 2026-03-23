@@ -3,6 +3,8 @@ import ProductsChart from "@/components/products-chart";
 import {getCurrentUser} from "@/lib/auth";
 import {prisma} from "@/lib/prisma";
 import { TrendingUp } from "lucide-react";
+import { Product } from "@prisma/client";
+import { Decimal } from "@prisma/client/runtime/index-browser";
 
 export default async function DashboardPage(){
     const user = await getCurrentUser();
@@ -11,7 +13,8 @@ export default async function DashboardPage(){
     const totalProducts = await prisma.product.count({where : {userId}});
     const allProducts = await prisma.product.findMany({where:{userId},select:{price:true,quantity:true,createdAt:true}});
     const totalValue = allProducts.reduce(
-        (sum: number, product) => sum + product.price.toNumber() * Number(product.quantity),
+        (sum: number, product: { price: Decimal; quantity: number }) =>
+            sum + product.price.toNumber() * Number(product.quantity),
         0
     );
     const lowStockCount = allProducts.filter(
