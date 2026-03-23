@@ -10,7 +10,10 @@ export default async function DashboardPage(){
 
     const totalProducts = await prisma.product.count({where : {userId}});
     const allProducts = await prisma.product.findMany({where:{userId},select:{price:true,quantity:true,createdAt:true}});
-    const totalValue = allProducts.reduce((sum,product)=> sum + Number(product.price)*Number(product.quantity),0);
+    const totalValue = allProducts.reduce(
+        (sum, product) => sum + product.price.toNumber() * Number(product.quantity),
+        0
+    );
     const lowStockCount = allProducts.filter(
         (p) => Number(p.quantity) <= 5 && Number(p.quantity) >= 1
     ).length;
