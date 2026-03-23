@@ -6,6 +6,7 @@ import { TrendingUp } from "lucide-react";
 import { Decimal } from "@prisma/client/runtime/index-browser";
 import { Product } from "@prisma/client";
 
+
 type ProductSummary = {
     price: Decimal;
     quantity: number;
